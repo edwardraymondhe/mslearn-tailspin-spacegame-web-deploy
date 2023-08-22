@@ -80,6 +80,8 @@ stages:
   - deployment: Deploy
     pool:
       vmImage: 'ubuntu-20.04'
+      demands:
+        spaceGame
     environment: dev
     variables:
     - group: Release
