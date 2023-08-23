@@ -4,7 +4,7 @@ trigger:
 
 variables:
   # DevOps -> Pipelines -> Library -> VariableGroups
-  buildConfiguration: 'Release'
+  buildConfiguration: '`12'
   # A variable specifically used for defining which branch to look for
   releaseBranchName: 'release'
 schedules:
