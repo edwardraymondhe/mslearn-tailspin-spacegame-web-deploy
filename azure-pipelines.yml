@@ -7,6 +7,14 @@ variables:
   # A variable specifically used for defining which branch to look for
   releaseBranchName: 'release'
 
+schedules:
+  - cron: '0 3 * * *'
+    displayName: 'Deploy every day at 3 A.M.'
+    branches:
+      include:
+      - release
+    always: false 
+
 stages:
 - stage: 'Build'
   displayName: 'Build the web application'
@@ -108,4 +116,31 @@ stages:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
               # This references to the "Release" Library, and searches up for the variable "WebAppNameDev"
               appName: '$(WebAppNameDev)'
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+
+- stage: 'Test'
+  displayName: 'Deploy to the test environment'
+  dependsOn: Dev
+  #condition: eq(variables['Build.Reason'], 'Schedule')
+  jobs:
+  - deployment: Deploy
+    pool:
+      name: Default
+      vmImage: 'ubuntu-20.04'
+      demands:
+        spaceGame
+    environment: test
+    variables:
+    - group: 'Release'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
+            inputs:
+              azureSubscription: 'Resource Manager - Tailspin - Space Game'
+              appName: '$(WebAppNameTest)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
