@@ -1,10 +1,11 @@
 trigger:
 - '*'
+
 # Adding Dummy Comment
 
 variables:
   # DevOps -> Pipelines -> Library -> VariableGroups
-  buildConfiguration: '`12'
+  buildConfiguration: '`Release'
   # A variable specifically used for defining which branch to look for
   releaseBranchName: 'release'
 schedules:
