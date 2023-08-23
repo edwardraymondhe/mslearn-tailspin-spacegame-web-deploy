@@ -2,7 +2,10 @@ trigger:
 - '*'
 
 variables:
+  # DevOps -> Pipelines -> Library -> VariableGroups
   buildConfiguration: 'Release'
+  # A variable specifically used for defining which branch to look for
+  releaseBranchName: 'release'
 
 stages:
 - stage: 'Build'
@@ -71,15 +74,23 @@ stages:
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
 
-- stage: 'Deploy'
-  displayName: 'Deploy the web application'
+- stage: 'Dev'
+  displayName: 'Deploy to the dev environment'
   dependsOn: Build
+  # A condition to check whether the pushed branch == the defined variable
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
+    )
   jobs:
   - deployment: Deploy
     pool:
       vmImage: 'ubuntu-20.04'
       demands:
         spaceGame
+    # This uses the environment called "dev", in "DevOps -> Pipelines -> Environments"
     environment: dev
     variables:
     - group: Release
@@ -93,5 +104,6 @@ stages:
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              appName: '$(WebAppName)'
+              # This references to the "Release" Library, and searches up for the variable "WebAppNameDev"
+              appName: '$(WebAppNameDev)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
